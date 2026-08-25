@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "thumbtest",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-25",
+  "assets": {
+    "directory": "./public"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "thumbtest-db",
+      "database_id": "e292d0eb-1690-489c-8da8-79405c1f790c"
+    }
+  ]
+}
