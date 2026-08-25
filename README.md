@@ -1,1 +1,0 @@
-# -thumbtest-v5
