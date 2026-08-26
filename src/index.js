@@ -23,15 +23,18 @@ async function getOrCreateUser(request, env) {
 
   if (!userId) {
     userId = createUserId();
-
     const now = Date.now();
 
     await env.DB.prepare(`
       INSERT INTO users (id, email, plan, created_at, updated_at)
       VALUES (?, ?, 'free', ?, ?)
     `)
-      .bind(userId, `${userId}@anonymous.thumbtest`)
-      .bind(now, now)
+      .bind(
+        userId,
+        `${userId}@anonymous.thumbtest`,
+        now,
+        now
+      )
       .run();
 
     return {
@@ -64,8 +67,12 @@ async function getOrCreateUser(request, env) {
     INSERT INTO users (id, email, plan, created_at, updated_at)
     VALUES (?, ?, 'free', ?, ?)
   `)
-    .bind(userId, `${userId}@anonymous.thumbtest`)
-    .bind(now, now)
+    .bind(
+      userId,
+      `${userId}@anonymous.thumbtest`,
+      now,
+      now
+    )
     .run();
 
   return {
