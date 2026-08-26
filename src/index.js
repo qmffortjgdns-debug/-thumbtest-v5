@@ -18,24 +18,23 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+async function createFreeUser(userId, env) {
+  const now = Date.now();
+  const email = `${userId}@anonymous.thumbtest`;
+
+  await env.DB.prepare(
+    "INSERT INTO users (id, email, plan, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
+  )
+    .bind(userId, email, "free", now, now)
+    .run();
+}
+
 async function getOrCreateUser(request, env) {
   let userId = getUserId(request);
 
   if (!userId) {
     userId = createUserId();
-    const now = Date.now();
-
-    await env.DB.prepare(`
-      INSERT INTO users (id, email, plan, created_at, updated_at)
-      VALUES (?, ?, 'free', ?, ?)
-    `)
-      .bind(
-        userId,
-        `${userId}@anonymous.thumbtest`,
-        now,
-        now
-      )
-      .run();
+    await createFreeUser(userId, env);
 
     return {
       id: userId,
@@ -44,16 +43,13 @@ async function getOrCreateUser(request, env) {
     };
   }
 
-  const result = await env.DB.prepare(`
-    SELECT id, plan
-    FROM users
-    WHERE id = ?
-    LIMIT 1
-  `)
+  const result = await env.DB.prepare(
+    "SELECT id, plan FROM users WHERE id = ? LIMIT 1"
+  )
     .bind(userId)
     .all();
 
-  if (result.results?.length) {
+  if (result.results && result.results.length > 0) {
     return {
       id: result.results[0].id,
       plan: result.results[0].plan,
@@ -61,19 +57,7 @@ async function getOrCreateUser(request, env) {
     };
   }
 
-  const now = Date.now();
-
-  await env.DB.prepare(`
-    INSERT INTO users (id, email, plan, created_at, updated_at)
-    VALUES (?, ?, 'free', ?, ?)
-  `)
-    .bind(
-      userId,
-      `${userId}@anonymous.thumbtest`,
-      now,
-      now
-    )
-    .run();
+  await createFreeUser(userId, env);
 
   return {
     id: userId,
@@ -85,30 +69,26 @@ async function getOrCreateUser(request, env) {
 async function getUsage(userId, env) {
   const date = today();
 
-  const result = await env.DB.prepare(`
-    SELECT test_count
-    FROM usage_daily
-    WHERE user_id = ? AND usage_date = ?
-    LIMIT 1
-  `)
+  const result = await env.DB.prepare(
+    "SELECT test_count FROM usage_daily WHERE user_id = ? AND usage_date = ? LIMIT 1"
+  )
     .bind(userId, date)
     .all();
 
-  return result.results?.length
-    ? Number(result.results[0].test_count)
-    : 0;
+  if (!result.results || result.results.length === 0) {
+    return 0;
+  }
+
+  return Number(result.results[0].test_count);
 }
 
 async function incrementUsage(userId, env) {
   const date = today();
 
-  await env.DB.prepare(`
-    INSERT INTO usage_daily (user_id, usage_date, test_count)
-    VALUES (?, ?, 1)
-    ON CONFLICT(user_id, usage_date)
-    DO UPDATE SET test_count = test_count + 1
-  `)
-    .bind(userId, date)
+  await env.DB.prepare(
+    "INSERT INTO usage_daily (user_id, usage_date, test_count) VALUES (?, ?, ?) ON CONFLICT(user_id, usage_date) DO UPDATE SET test_count = test_count + 1"
+  )
+    .bind(userId, date, 1)
     .run();
 }
 
@@ -118,26 +98,24 @@ export default {
 
     if (url.pathname === "/api/health") {
       try {
-        const result = await env.DB
-          .prepare(`
-            SELECT name
-            FROM sqlite_master
-            WHERE type='table'
-            ORDER BY name
-          `)
-          .all();
+        const result = await env.DB.prepare(
+          "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+        ).all();
 
         return Response.json({
           ok: true,
           database: "connected",
-          tables: result.results ?? []
+          tables: result.results || []
         });
       } catch (error) {
-        return Response.json({
-          ok: false,
-          database: "error",
-          message: String(error?.message || error)
-        }, { status: 500 });
+        return Response.json(
+          {
+            ok: false,
+            database: "error",
+            message: String(error && error.message ? error.message : error)
+          },
+          { status: 500 }
+        );
       }
     }
 
@@ -145,11 +123,6 @@ export default {
       try {
         const user = await getOrCreateUser(request, env);
         const used = await getUsage(user.id, env);
-
-        const remaining =
-          user.plan === "pro"
-            ? null
-            : Math.max(0, FREE_DAILY_LIMIT - used);
 
         const headers = new Headers({
           "Content-Type": "application/json"
@@ -166,15 +139,21 @@ export default {
             plan: user.plan,
             dailyLimit: user.plan === "pro" ? null : FREE_DAILY_LIMIT,
             usedToday: used,
-            remainingToday: remaining
+            remainingToday:
+              user.plan === "pro"
+                ? null
+                : Math.max(0, FREE_DAILY_LIMIT - used)
           }),
           { headers }
         );
       } catch (error) {
-        return Response.json({
-          ok: false,
-          error: String(error?.message || error)
-        }, { status: 500 });
+        return Response.json(
+          {
+            ok: false,
+            error: String(error && error.message ? error.message : error)
+          },
+          { status: 500 }
+        );
       }
     }
 
@@ -233,10 +212,13 @@ export default {
           { headers }
         );
       } catch (error) {
-        return Response.json({
-          ok: false,
-          error: String(error?.message || error)
-        }, { status: 500 });
+        return Response.json(
+          {
+            ok: false,
+            error: String(error && error.message ? error.message : error)
+          },
+          { status: 500 }
+        );
       }
     }
 
