@@ -1,87 +1,442 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ThumbTest — YouTube Thumbnail Analyzer</title>
 <meta name="description" content="Analyze and compare YouTube thumbnails before publishing.">
+
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f6f7fb;color:#15171a}
-.wrap{max-width:1080px;margin:auto;padding:22px 16px 50px}header{text-align:center;padding:38px 0 22px}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f6f7fb;color:#15171a}
+.wrap{max-width:1080px;margin:auto;padding:22px 16px 50px}
+header{text-align:center;padding:38px 0 22px}
 .badge{display:inline-block;background:#111;color:#fff;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800}
-h1{font-size:clamp(38px,7vw,62px);line-height:1;margin:14px 0 12px}header p{max-width:700px;margin:auto;color:#646b75;font-size:18px;line-height:1.55}
-.card{background:#fff;border:1px solid #e4e6ea;border-radius:20px;padding:22px;margin:16px 0;box-shadow:0 8px 28px rgba(0,0,0,.045)}h2{margin:0 0 16px;font-size:22px}
-.tabs{display:flex;gap:8px;margin-bottom:16px}.tab{flex:1;padding:11px;border:1px solid #ddd;background:#f4f5f7;border-radius:10px;font-weight:800;cursor:pointer;text-align:center}.tab.active{background:#111;color:#fff}
-.uploads,.preview-grid,.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.upload{border:2px dashed #cbd0d8;border-radius:15px;padding:27px 15px;text-align:center;cursor:pointer;min-height:130px;display:flex;align-items:center;justify-content:center;flex-direction:column}.upload:hover{background:#fafafa}.upload input{display:none}.upload span{font-size:13px;color:#747a84;margin-top:7px}
-.mock{border:1px solid #ddd;border-radius:15px;padding:13px;background:#fff}.mock h3{margin:0 0 9px;font-size:12px;color:#6b717a}.screen{background:#eee;border-radius:10px;padding:9px}
-.thumb{width:100%;aspect-ratio:16/9;object-fit:cover;background:#ddd;border-radius:7px;display:block}.title{font-weight:750;margin:8px 2px 3px;font-size:14px;line-height:1.25}.meta{font-size:11px;color:#747a84}
-.tiny-wrap{background:#17181a;border-radius:14px;padding:18px;text-align:center}.tiny{width:220px;max-width:70%;aspect-ratio:16/9;object-fit:cover;border-radius:5px}.tiny-label{color:#fff;font-size:12px;margin-top:8px;opacity:.8}
-.scores{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.score{padding:15px;border-radius:14px;background:#f4f5f7;text-align:center}.score b{display:block;font-size:25px;margin-bottom:4px}.score span{font-size:12px;color:#666}
-.overall{text-align:center;padding:20px 0 8px}.overall .num{font-size:58px;font-weight:850}.bar{height:10px;background:#e7e8eb;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:#111;transition:.35s}
-.advice,.result{margin-top:15px;padding:15px;background:#f8f8f8;border-radius:12px;color:#555;line-height:1.5;font-size:14px}.winner{border:2px solid #111}
-input[type=text]{width:100%;border:1px solid #d9dce1;border-radius:10px;padding:12px;font:inherit}
-button{border:0;background:#111;color:#fff;border-radius:10px;padding:11px 16px;font-weight:800;cursor:pointer}button.secondary{background:#eee;color:#222}
-.hidden{display:none}footer{text-align:center;color:#8a9098;font-size:12px;padding:15px}
-@media(max-width:700px){.uploads,.preview-grid,.compare{grid-template-columns:1fr}.scores{grid-template-columns:1fr 1fr}.tiny{max-width:85%}}
-</style></head><body><div class="wrap">
-<header><div class="badge">FREE YOUTUBE THUMBNAIL ANALYZER</div><h1>ThumbTest</h1><p>Preview, analyze and compare your YouTube thumbnails before you publish. See what survives the tiny-screen test.</p></header>
-<div class="card"><div class="tabs"><div class="tab active" id="tabSingle">Single Test</div><div class="tab" id="tabAB">A/B Compare</div></div>
-<div id="singlePanel"><label class="upload"><input id="fileA" type="file" accept="image/png,image/jpeg,image/webp"><strong>Click to upload your thumbnail</strong><span>PNG, JPG or WebP · 16:9 recommended</span></label></div>
-<div id="abPanel" class="hidden"><div class="uploads"><label class="upload"><input id="fileA2" type="file" accept="image/png,image/jpeg,image/webp"><strong>Upload Thumbnail A</strong><span>Choose your first version</span></label><label class="upload"><input id="fileB" type="file" accept="image/png,image/jpeg,image/webp"><strong>Upload Thumbnail B</strong><span>Choose your second version</span></label></div></div></div>
+h1{font-size:clamp(38px,7vw,62px);line-height:1;margin:14px 0 12px}
+header p{max-width:700px;margin:auto;color:#646b75;font-size:18px;line-height:1.55}
+
+.usage{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  margin-top:16px;
+  padding:8px 13px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid #e2e4e8;
+  font-size:13px;
+  font-weight:750;
+}
+
+.card{
+  background:#fff;
+  border:1px solid #e4e6ea;
+  border-radius:20px;
+  padding:22px;
+  margin:16px 0;
+  box-shadow:0 8px 28px rgba(0,0,0,.045)
+}
+h2{margin:0 0 16px;font-size:22px}
+
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{
+  flex:1;
+  padding:11px;
+  border:1px solid #ddd;
+  background:#f4f5f7;
+  border-radius:10px;
+  font-weight:800;
+  cursor:pointer;
+  text-align:center
+}
+.tab.active{background:#111;color:#fff}
+
+.uploads,.preview-grid,.compare{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px
+}
+
+.upload{
+  border:2px dashed #cbd0d8;
+  border-radius:15px;
+  padding:27px 15px;
+  text-align:center;
+  cursor:pointer;
+  min-height:130px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column
+}
+.upload:hover{background:#fafafa}
+.upload input{display:none}
+.upload span{font-size:13px;color:#747a84;margin-top:7px}
+
+.mock{border:1px solid #ddd;border-radius:15px;padding:13px;background:#fff}
+.mock h3{margin:0 0 9px;font-size:12px;color:#6b717a}
+.screen{background:#eee;border-radius:10px;padding:9px}
+
+.thumb{
+  width:100%;
+  aspect-ratio:16/9;
+  object-fit:cover;
+  background:#ddd;
+  border-radius:7px;
+  display:block
+}
+
+.title{font-weight:750;margin:8px 2px 3px;font-size:14px;line-height:1.25}
+.meta{font-size:11px;color:#747a84}
+
+.tiny-wrap{background:#17181a;border-radius:14px;padding:18px;text-align:center}
+.tiny{width:220px;max-width:70%;aspect-ratio:16/9;object-fit:cover;border-radius:5px}
+.tiny-label{color:#fff;font-size:12px;margin-top:8px;opacity:.8}
+
+.scores{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.score{padding:15px;border-radius:14px;background:#f4f5f7;text-align:center}
+.score b{display:block;font-size:25px;margin-bottom:4px}
+.score span{font-size:12px;color:#666}
+
+.overall{text-align:center;padding:20px 0 8px}
+.overall .num{font-size:58px;font-weight:850}
+
+.bar{height:10px;background:#e7e8eb;border-radius:99px;overflow:hidden}
+.fill{height:100%;width:0;background:#111;transition:.35s}
+
+.advice,.result{
+  margin-top:15px;
+  padding:15px;
+  background:#f8f8f8;
+  border-radius:12px;
+  color:#555;
+  line-height:1.5;
+  font-size:14px
+}
+
+.winner{border:2px solid #111}
+
+input[type=text]{
+  width:100%;
+  border:1px solid #d9dce1;
+  border-radius:10px;
+  padding:12px;
+  font:inherit
+}
+
+button{
+  border:0;
+  background:#111;
+  color:#fff;
+  border-radius:10px;
+  padding:11px 16px;
+  font-weight:800;
+  cursor:pointer
+}
+
+button.secondary{background:#eee;color:#222}
+button:disabled{opacity:.5;cursor:not-allowed}
+
+.hidden{display:none}
+
+.limit-message{
+  margin-top:14px;
+  padding:14px;
+  border-radius:12px;
+  background:#fff3f3;
+  border:1px solid #ffd6d6;
+  color:#a33;
+  font-size:14px;
+  line-height:1.5;
+  display:none
+}
+
+footer{text-align:center;color:#8a9098;font-size:12px;padding:15px}
+
+@media(max-width:700px){
+  .uploads,.preview-grid,.compare{grid-template-columns:1fr}
+  .scores{grid-template-columns:1fr 1fr}
+  .tiny{max-width:85%}
+}
+
+@media(max-width:600px){
+  #pro{margin:24px 12px!important;padding:18px!important}
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+<header>
+  <div class="badge">FREE YOUTUBE THUMBNAIL ANALYZER</div>
+  <h1>ThumbTest</h1>
+  <p>Preview, analyze and compare your YouTube thumbnails before you publish. See what survives the tiny-screen test.</p>
+
+  <div class="usage" id="usageBadge">
+    Loading usage…
+  </div>
+</header>
+
+<div class="card">
+
+  <div class="tabs">
+    <div class="tab active" id="tabSingle">Single Test</div>
+    <div class="tab" id="tabAB">A/B Compare</div>
+  </div>
+
+  <div id="singlePanel">
+
+    <label class="upload">
+      <input id="fileA" type="file" accept="image/png,image/jpeg,image/webp">
+      <strong>Click to upload your thumbnail</strong>
+      <span>PNG, JPG or WebP · 16:9 recommended</span>
+    </label>
+
+  </div>
+
+  <div id="abPanel" class="hidden">
+
+    <div class="uploads">
+
+      <label class="upload">
+        <input id="fileA2" type="file" accept="image/png,image/jpeg,image/webp">
+        <strong>Upload Thumbnail A</strong>
+        <span>Choose your first version</span>
+      </label>
+
+      <label class="upload">
+        <input id="fileB" type="file" accept="image/png,image/jpeg,image/webp">
+        <strong>Upload Thumbnail B</strong>
+        <span>Choose your second version</span>
+      </label>
+
+    </div>
+
+  </div>
+
+  <div class="limit-message" id="limitMessage">
+    You've reached today's free limit of 5 tests. Upgrade to Pro for unlimited testing.
+  </div>
+
+</div>
+
 
 <div id="singleResults" class="hidden">
-<div class="card"><h2>Preview</h2><div class="preview-grid">
-<div class="mock"><h3>DESKTOP PREVIEW</h3><div class="screen"><img id="desk" class="thumb"><div class="title" id="desktopTitle">Your Video Title — Make people want to click</div><div class="meta">Your Channel · 125K views · 2 days ago</div></div></div>
-<div class="mock"><h3>MOBILE PREVIEW</h3><div class="screen"><img id="mob" class="thumb"><div class="title">Your Video Title — Make people want to click</div><div class="meta">Your Channel · 125K views</div></div></div></div></div>
-<div class="card"><h2>Mobile tiny-screen test</h2><p style="color:#666;font-size:14px">Would the main idea still be recognizable when the thumbnail is very small?</p><div class="tiny-wrap"><img id="tiny" class="tiny"><div class="tiny-label">Small YouTube-style preview</div></div></div>
-<div class="card"><h2>Quick analysis</h2><div class="scores"><div class="score"><b id="dim">—</b><span>Dimensions</span></div><div class="score"><b id="contrast">—</b><span>Contrast</span></div><div class="score"><b id="brightness">—</b><span>Brightness</span></div><div class="score"><b id="mobile">—</b><span>Mobile fit</span></div></div><div class="overall"><div>CTR potential</div><div class="num" id="overall">—</div><div class="bar"><div class="fill" id="fill"></div></div></div><div class="advice" id="tip">Upload an image to see recommendations.</div></div>
-<div class="card"><h2>Test your title + thumbnail</h2><input id="titleInput" type="text" placeholder="Enter your YouTube title"><button style="margin-top:10px" onclick="updateTitle()">Update preview</button></div></div>
 
-<div id="abResults" class="hidden"><div class="card"><h2>A/B thumbnail comparison</h2><div class="compare"><div class="mock" id="boxA"><h3>THUMBNAIL A</h3><img id="previewA" class="thumb"></div><div class="mock" id="boxB"><h3>THUMBNAIL B</h3><img id="previewB" class="thumb"></div></div><div class="result" id="abResult">Upload both thumbnails to compare them.</div></div></div>
-<button class="secondary" onclick="location.reload()">Start over</button><footer>Scores are visual estimates, not guarantees of CTR.</footer></div>
-<script>
-let statsA=null,statsB=null;const $=id=>document.getElementById(id);
-$("tabSingle").onclick=()=>{tabSingle.classList.add("active");tabAB.classList.remove("active");singlePanel.classList.remove("hidden");abPanel.classList.add("hidden");abResults.classList.add("hidden");singleResults.classList.toggle("hidden",!statsA)};
-$("tabAB").onclick=()=>{tabAB.classList.add("active");tabSingle.classList.remove("active");abPanel.classList.remove("hidden");singlePanel.classList.add("hidden");singleResults.classList.add("hidden");if(statsA||statsB)abResults.classList.remove("hidden")};
-function loadFile(input,cb){const f=input.files[0];if(!f)return;const url=URL.createObjectURL(f),img=new Image();img.onload=()=>cb(img,url);img.src=url}
-fileA.onchange=()=>loadFile(fileA,(img,url)=>{desk.src=url;mob.src=url;tiny.src=url;singleResults.classList.remove("hidden");statsA=analyze(img);render(statsA)});
-fileA2.onchange=()=>loadFile(fileA2,(img,url)=>{statsA=analyze(img);previewA.src=url;checkAB()});
-fileB.onchange=()=>loadFile(fileB,(img,url)=>{statsB=analyze(img);previewB.src=url;checkAB()});
-function analyze(img){const w=img.naturalWidth,h=img.naturalHeight;let dim=w>=1280&&h>=720&&Math.abs(w/h-16/9)<.03?100:w>=640&&h>=360?75:45;const c=document.createElement("canvas"),x=c.getContext("2d");c.width=Math.min(w,600);c.height=Math.max(1,Math.round(c.width*h/w));x.drawImage(img,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height).data;let s=0,s2=0,n=d.length/4;for(let i=0;i<d.length;i+=4){let y=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];s+=y;s2+=y*y}const m=s/n,sd=Math.sqrt(Math.max(0,s2/n-m*m));let contrast=Math.min(100,Math.round(35+sd*1.8)),brightness=Math.round(100-Math.min(60,Math.abs(m-135)*.45)),mobile=Math.round(dim*.5+contrast*.3+brightness*.2),score=Math.round(dim*.25+contrast*.3+brightness*.15+mobile*.3);return{w,h,dim,contrast,brightness,mobile,score,ratio:w/h}}
-function render(s){dim.textContent=s.dim;contrast.textContent=s.contrast;brightness.textContent=s.brightness;mobile.textContent=s.mobile;overall.textContent=s.score;fill.style.width=s.score+"%";let a=[];if(Math.abs(s.ratio-16/9)>.03)a.push("Use a 16:9 layout for YouTube.");if(s.dim<100)a.push("Try exporting at 1280×720 or larger.");if(s.contrast<65)a.push("Increase contrast so the subject and text separate from the background.");if(s.brightness<55)a.push("Check whether the thumbnail is too dark or too bright.");if(!a.length)a.push("Strong baseline. Now test it at tiny size and against another thumbnail.");tip.textContent=a.join(" ")}
-function updateTitle(){const t=titleInput.value.trim();if(t)desktopTitle.textContent=t}
-function checkAB(){abResults.classList.remove("hidden");if(!statsA||!statsB){abResult.textContent="Upload both thumbnails to compare them.";return}boxA.classList.remove("winner");boxB.classList.remove("winner");if(statsA.score>statsB.score){boxA.classList.add("winner");abResult.textContent=`A has the stronger estimated visual score: ${statsA.score} vs ${statsB.score}. Consider testing A first.`}else if(statsB.score>statsA.score){boxB.classList.add("winner");abResult.textContent=`B has the stronger estimated visual score: ${statsB.score} vs ${statsA.score}. Consider testing B first.`}else abResult.textContent=`It's a tie at ${statsA.score}. Try the tiny-screen view and judge which communicates faster.`}
-</script>
+  <div class="card">
+    <h2>Preview</h2>
 
-<style>
-@media (max-width:600px){#pro{margin:24px 12px!important;padding:18px!important}}
-</style>
+    <div class="preview-grid">
+
+      <div class="mock">
+        <h3>DESKTOP PREVIEW</h3>
+
+        <div class="screen">
+          <img id="desk" class="thumb">
+          <div class="title" id="desktopTitle">Your Video Title — Make people want to click</div>
+          <div class="meta">Your Channel · 125K views · 2 days ago</div>
+        </div>
+      </div>
+
+      <div class="mock">
+        <h3>MOBILE PREVIEW</h3>
+
+        <div class="screen">
+          <img id="mob" class="thumb">
+          <div class="title">Your Video Title — Make people want to click</div>
+          <div class="meta">Your Channel · 125K views</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="card">
+
+    <h2>Mobile tiny-screen test</h2>
+
+    <p style="color:#666;font-size:14px">
+      Would the main idea still be recognizable when the thumbnail is very small?
+    </p>
+
+    <div class="tiny-wrap">
+      <img id="tiny" class="tiny">
+      <div class="tiny-label">Small YouTube-style preview</div>
+    </div>
+
+  </div>
+
+
+  <div class="card">
+
+    <h2>Quick analysis</h2>
+
+    <div class="scores">
+
+      <div class="score">
+        <b id="dim">—</b>
+        <span>Dimensions</span>
+      </div>
+
+      <div class="score">
+        <b id="contrast">—</b>
+        <span>Contrast</span>
+      </div>
+
+      <div class="score">
+        <b id="brightness">—</b>
+        <span>Brightness</span>
+      </div>
+
+      <div class="score">
+        <b id="mobile">—</b>
+        <span>Mobile fit</span>
+      </div>
+
+    </div>
+
+    <div class="overall">
+      <div>CTR potential</div>
+      <div class="num" id="overall">—</div>
+
+      <div class="bar">
+        <div class="fill" id="fill"></div>
+      </div>
+    </div>
+
+    <div class="advice" id="tip">
+      Upload an image to see recommendations.
+    </div>
+
+  </div>
+
+
+  <div class="card">
+
+    <h2>Test your title + thumbnail</h2>
+
+    <input id="titleInput" type="text" placeholder="Enter your YouTube title">
+
+    <button style="margin-top:10px" onclick="updateTitle()">
+      Update preview
+    </button>
+
+  </div>
+
+</div>
+
+
+<div id="abResults" class="hidden">
+
+  <div class="card">
+
+    <h2>A/B thumbnail comparison</h2>
+
+    <div class="compare">
+
+      <div class="mock" id="boxA">
+        <h3>THUMBNAIL A</h3>
+        <img id="previewA" class="thumb">
+      </div>
+
+      <div class="mock" id="boxB">
+        <h3>THUMBNAIL B</h3>
+        <img id="previewB" class="thumb">
+      </div>
+
+    </div>
+
+    <div class="result" id="abResult">
+      Upload both thumbnails to compare them.
+    </div>
+
+  </div>
+
+</div>
+
+
+<button class="secondary" onclick="location.reload()">
+  Start over
+</button>
+
+
+<footer>
+  Scores are visual estimates, not guarantees of CTR.
+</footer>
+
+</div>
 
 
 <section id="pro" style="margin:36px auto;max-width:960px;padding:26px;border:1px solid #ddd;border-radius:18px;background:#fff">
+
   <div style="text-align:center">
-    <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.6">THUMBTEST</div>
-    <h2 style="margin:8px 0">Choose the plan that fits your channel</h2>
-    <p style="margin:0 auto 20px;max-width:650px;opacity:.72">Start free. Upgrade when you need deeper thumbnail analysis and unlimited testing.</p>
+
+    <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.6">
+      THUMBTEST
+    </div>
+
+    <h2 style="margin:8px 0">
+      Choose the plan that fits your channel
+    </h2>
+
+    <p style="margin:0 auto 20px;max-width:650px;opacity:.72">
+      Start free. Upgrade when you need deeper thumbnail analysis and unlimited testing.
+    </p>
+
   </div>
 
+
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px">
+
     <div style="padding:22px;border:1px solid #ddd;border-radius:16px">
-      <div style="font-size:13px;font-weight:700;opacity:.7">FREE</div>
-      <h3 style="font-size:28px;margin:8px 0">$0</h3>
-      <p style="opacity:.7">For getting started</p>
+
+      <div style="font-size:13px;font-weight:700;opacity:.7">
+        FREE
+      </div>
+
+      <h3 style="font-size:28px;margin:8px 0">
+        $0
+      </h3>
+
+      <p style="opacity:.7">
+        For getting started
+      </p>
+
       <ul style="line-height:1.8;padding-left:20px">
         <li>Basic thumbnail score</li>
         <li>Desktop preview</li>
         <li>Mobile preview</li>
-        <li>Limited A/B testing</li>
+        <li>5 tests per day</li>
       </ul>
-      <button type="button" disabled style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;background:#f5f5f5">Current plan</button>
+
+      <button type="button" disabled style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;background:#f5f5f5">
+        Current plan
+      </button>
+
     </div>
 
+
     <div style="padding:22px;border:2px solid #111;border-radius:16px;position:relative">
-      <div style="position:absolute;right:14px;top:14px;font-size:11px;font-weight:700">PRO</div>
-      <div style="font-size:13px;font-weight:700;opacity:.7">CREATOR PRO</div>
-      <h3 style="font-size:28px;margin:8px 0">$5.99<span style="font-size:14px;font-weight:400"> / month</span></h3>
-      <p style="opacity:.7">For serious creators</p>
+
+      <div style="position:absolute;right:14px;top:14px;font-size:11px;font-weight:700">
+        PRO
+      </div>
+
+      <div style="font-size:13px;font-weight:700;opacity:.7">
+        CREATOR PRO
+      </div>
+
+      <h3 style="font-size:28px;margin:8px 0">
+        $5.99<span style="font-size:14px;font-weight:400"> / month</span>
+      </h3>
+
+      <p style="opacity:.7">
+        For serious creators
+      </p>
+
       <ul style="line-height:1.8;padding-left:20px">
         <li>Unlimited thumbnail tests</li>
         <li>Advanced CTR potential</li>
@@ -90,28 +445,609 @@ function checkAB(){abResults.classList.remove("hidden");if(!statsA||!statsB){abR
         <li>AI optimization suggestions</li>
         <li>Test history</li>
       </ul>
-      <button id="upgradeBtn" type="button" style="width:100%;padding:12px;border:0;border-radius:10px;cursor:pointer;font-weight:700">Upgrade to Pro</button>
-      <div id="upgradeMsg" style="display:none;margin-top:10px;font-size:13px;text-align:center;opacity:.7">Checkout is coming soon. Your current tests remain free.</div>
+
+      <button id="upgradeBtn" type="button" style="width:100%;padding:12px;border:0;border-radius:10px;cursor:pointer;font-weight:700">
+        Upgrade to Pro
+      </button>
+
+      <div id="upgradeMsg" style="display:none;margin-top:10px;font-size:13px;text-align:center;opacity:.7">
+        Checkout is coming soon. Your current tests remain free.
+      </div>
+
     </div>
+
   </div>
+
 
   <div style="margin-top:18px;padding:14px;border-radius:12px;background:#f7f7f7;font-size:13px;line-height:1.5">
-    <strong>Free plan:</strong> the limits shown here are product limits for the upcoming membership system. Secure account-based limits will be added with the backend.
+
+    <strong>Free plan:</strong>
+    You can run up to 5 thumbnail tests per day.
+    Pro users will have unlimited testing.
+
   </div>
+
 </section>
 
-<style>
-@media (max-width:600px){
-  #pro{margin:24px 12px!important;padding:18px!important}
-}
-</style>
 
 <script>
+
+let statsA = null;
+let statsB = null;
+
+let usage = {
+  plan: "free",
+  dailyLimit: 5,
+  usedToday: 0,
+  remainingToday: 5
+};
+
+const $ = id => document.getElementById(id);
+
+
+/* =========================
+   USAGE
+========================= */
+
+async function loadUsage(){
+
+  try{
+
+    const response = await fetch("/api/me", {
+      method:"GET",
+      credentials:"include"
+    });
+
+    const data = await response.json();
+
+    if(data.plan){
+
+      usage.plan = data.plan;
+      usage.dailyLimit = data.dailyLimit;
+      usage.usedToday = data.usedToday;
+      usage.remainingToday = data.remainingToday;
+
+      renderUsage();
+
+    }
+
+  }catch(error){
+
+    console.error("Usage loading failed:", error);
+
+    $("usageBadge").textContent = "Free plan";
+
+  }
+
+}
+
+
+function renderUsage(){
+
+  const badge = $("usageBadge");
+
+  if(usage.plan === "pro"){
+
+    badge.textContent = "PRO · Unlimited tests";
+
+    $("limitMessage").style.display = "none";
+
+    return;
+
+  }
+
+  const remaining = Math.max(
+    0,
+    Number(usage.remainingToday || 0)
+  );
+
+  badge.textContent =
+    `FREE · ${remaining} test${remaining === 1 ? "" : "s"} remaining today`;
+
+}
+
+
+async function consumeUsage(){
+
+  if(usage.plan === "pro"){
+    return true;
+  }
+
+  if(Number(usage.remainingToday) <= 0){
+
+    $("limitMessage").style.display = "block";
+
+    return false;
+
+  }
+
+  try{
+
+    const response = await fetch("/api/usage", {
+      method:"POST",
+      credentials:"include"
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+
+      if(data.error === "daily_limit_reached"){
+
+        usage.remainingToday = 0;
+        usage.usedToday = Number(data.usedToday || 5);
+
+        renderUsage();
+
+        $("limitMessage").style.display = "block";
+
+        return false;
+
+      }
+
+      throw new Error(data.error || "Usage request failed");
+
+    }
+
+    usage.usedToday = Number(data.usedToday || 0);
+    usage.remainingToday =
+      data.remainingToday === null
+        ? null
+        : Number(data.remainingToday);
+
+    renderUsage();
+
+    return true;
+
+  }catch(error){
+
+    console.error("Usage request failed:", error);
+
+    alert("Unable to verify your daily test limit. Please try again.");
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================
+   TABS
+========================= */
+
+$("tabSingle").onclick = () => {
+
+  tabSingle.classList.add("active");
+  tabAB.classList.remove("active");
+
+  singlePanel.classList.remove("hidden");
+  abPanel.classList.add("hidden");
+
+  abResults.classList.add("hidden");
+
+  singleResults.classList.toggle(
+    "hidden",
+    !statsA
+  );
+
+};
+
+
+$("tabAB").onclick = () => {
+
+  tabAB.classList.add("active");
+  tabSingle.classList.remove("active");
+
+  abPanel.classList.remove("hidden");
+  singlePanel.classList.add("hidden");
+
+  singleResults.classList.add("hidden");
+
+  if(statsA || statsB){
+    abResults.classList.remove("hidden");
+  }
+
+};
+
+
+/* =========================
+   FILE LOADING
+========================= */
+
+function loadFile(input, cb){
+
+  const f = input.files[0];
+
+  if(!f) return;
+
+  const url = URL.createObjectURL(f);
+
+  const img = new Image();
+
+  img.onload = () => cb(img, url);
+
+  img.src = url;
+
+}
+
+
+/* =========================
+   SINGLE TEST
+========================= */
+
+fileA.onchange = async () => {
+
+  const allowed = await consumeUsage();
+
+  if(!allowed){
+
+    fileA.value = "";
+
+    return;
+
+  }
+
+  loadFile(
+    fileA,
+    (img,url) => {
+
+      desk.src = url;
+      mob.src = url;
+      tiny.src = url;
+
+      singleResults.classList.remove("hidden");
+
+      statsA = analyze(img);
+
+      render(statsA);
+
+    }
+  );
+
+};
+
+
+/* =========================
+   A/B TEST
+========================= */
+
+fileA2.onchange = async () => {
+
+  const allowed = await consumeUsage();
+
+  if(!allowed){
+
+    fileA2.value = "";
+
+    return;
+
+  }
+
+  loadFile(
+    fileA2,
+    (img,url) => {
+
+      statsA = analyze(img);
+
+      previewA.src = url;
+
+      checkAB();
+
+    }
+  );
+
+};
+
+
+fileB.onchange = async () => {
+
+  const allowed = await consumeUsage();
+
+  if(!allowed){
+
+    fileB.value = "";
+
+    return;
+
+  }
+
+  loadFile(
+    fileB,
+    (img,url) => {
+
+      statsB = analyze(img);
+
+      previewB.src = url;
+
+      checkAB();
+
+    }
+  );
+
+};
+
+
+/* =========================
+   IMAGE ANALYSIS
+========================= */
+
+function analyze(img){
+
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+
+  let dim =
+    w >= 1280 &&
+    h >= 720 &&
+    Math.abs(w/h - 16/9) < .03
+      ? 100
+      : w >= 640 && h >= 360
+        ? 75
+        : 45;
+
+  const c = document.createElement("canvas");
+  const x = c.getContext("2d");
+
+  c.width = Math.min(w,600);
+
+  c.height =
+    Math.max(
+      1,
+      Math.round(c.width*h/w)
+    );
+
+  x.drawImage(
+    img,
+    0,
+    0,
+    c.width,
+    c.height
+  );
+
+  const d =
+    x.getImageData(
+      0,
+      0,
+      c.width,
+      c.height
+    ).data;
+
+  let s = 0;
+  let s2 = 0;
+
+  const n = d.length / 4;
+
+  for(
+    let i=0;
+    i<d.length;
+    i+=4
+  ){
+
+    const y =
+      .2126*d[i] +
+      .7152*d[i+1] +
+      .0722*d[i+2];
+
+    s += y;
+    s2 += y*y;
+
+  }
+
+  const m = s/n;
+
+  const sd =
+    Math.sqrt(
+      Math.max(
+        0,
+        s2/n - m*m
+      )
+    );
+
+  let contrast =
+    Math.min(
+      100,
+      Math.round(35 + sd*1.8)
+    );
+
+  let brightness =
+    Math.round(
+      100 -
+      Math.min(
+        60,
+        Math.abs(m-135)*.45
+      )
+    );
+
+  let mobile =
+    Math.round(
+      dim*.5 +
+      contrast*.3 +
+      brightness*.2
+    );
+
+  let score =
+    Math.round(
+      dim*.25 +
+      contrast*.3 +
+      brightness*.15 +
+      mobile*.3
+    );
+
+  return {
+    w,
+    h,
+    dim,
+    contrast,
+    brightness,
+    mobile,
+    score,
+    ratio:w/h
+  };
+
+}
+
+
+/* =========================
+   RENDER SINGLE
+========================= */
+
+function render(s){
+
+  dim.textContent = s.dim;
+  contrast.textContent = s.contrast;
+  brightness.textContent = s.brightness;
+  mobile.textContent = s.mobile;
+
+  overall.textContent = s.score;
+
+  fill.style.width =
+    s.score + "%";
+
+  let a = [];
+
+  if(
+    Math.abs(s.ratio-16/9) > .03
+  ){
+    a.push(
+      "Use a 16:9 layout for YouTube."
+    );
+  }
+
+  if(s.dim < 100){
+    a.push(
+      "Try exporting at 1280×720 or larger."
+    );
+  }
+
+  if(s.contrast < 65){
+    a.push(
+      "Increase contrast so the subject and text separate from the background."
+    );
+  }
+
+  if(s.brightness < 55){
+    a.push(
+      "Check whether the thumbnail is too dark or too bright."
+    );
+  }
+
+  if(!a.length){
+    a.push(
+      "Strong baseline. Now test it at tiny size and against another thumbnail."
+    );
+  }
+
+  tip.textContent =
+    a.join(" ");
+
+}
+
+
+/* =========================
+   TITLE
+========================= */
+
+function updateTitle(){
+
+  const t =
+    titleInput.value.trim();
+
+  if(t){
+    desktopTitle.textContent = t;
+  }
+
+}
+
+
+/* =========================
+   A/B RESULT
+========================= */
+
+function checkAB(){
+
+  abResults.classList.remove("hidden");
+
+  if(!statsA || !statsB){
+
+    abResult.textContent =
+      "Upload both thumbnails to compare them.";
+
+    return;
+
+  }
+
+  boxA.classList.remove("winner");
+  boxB.classList.remove("winner");
+
+  if(statsA.score > statsB.score){
+
+    boxA.classList.add("winner");
+
+    abResult.textContent =
+      `A has the stronger estimated visual score: ${statsA.score} vs ${statsB.score}. Consider testing A first.`;
+
+  }
+
+  else if(statsB.score > statsA.score){
+
+    boxB.classList.add("winner");
+
+    abResult.textContent =
+      `B has the stronger estimated visual score: ${statsB.score} vs ${statsA.score}. Consider testing B first.`;
+
+  }
+
+  else{
+
+    abResult.textContent =
+      `It's a tie at ${statsA.score}. Try the tiny-screen view and judge which communicates faster.`;
+
+  }
+
+}
+
+
+/* =========================
+   PRO BUTTON
+========================= */
+
 (function(){
-  var b=document.getElementById('upgradeBtn');
-  var m=document.getElementById('upgradeMsg');
-  if(b && m) b.addEventListener('click',function(){m.style.display='block';});
+
+  const b =
+    document.getElementById(
+      "upgradeBtn"
+    );
+
+  const m =
+    document.getElementById(
+      "upgradeMsg"
+    );
+
+  if(b && m){
+
+    b.addEventListener(
+      "click",
+      function(){
+
+        m.style.display =
+          "block";
+
+      }
+    );
+
+  }
+
 })();
+
+
+/* =========================
+   START
+========================= */
+
+loadUsage();
+
 </script>
 
-</body></html>
+</body>
+</html>
