@@ -1586,6 +1586,12 @@ loadUsage();
 );
 
 </script>
-
-</body>
+<script>
+window.addEventListener("load", function () {
+  if (typeof loadUsage === "function") {
+    loadUsage();
+  }
+});
+</script>
+ </body>
 </html>
